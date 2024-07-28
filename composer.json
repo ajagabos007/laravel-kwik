@@ -3,6 +3,7 @@
     "description": "A KWIK Laravel Package",
     "type": "library",
     "version": "1.0.0",
+    "keywords": ["laravel", "kwik","php","package"],
     "require": {
         "php": "^8.2",
         "guzzlehttp/guzzle": "^7.2"
