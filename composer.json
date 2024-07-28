@@ -1,0 +1,45 @@
+{
+    "name": "ajagabos/laravel-kwik",
+    "description": "A KWIK Laravel Package",
+    "type": "library",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.2",
+        "mockery/mockery": "^1.6",
+        "phpstan/phpstan": "^1.11",
+        "symfony/var-dumper": "^7.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Ajagabos\\Kwik\\": "src/",
+            "Ajagabos\\Kwik\\Tests\\":"tests/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ajagabos\\Kwik\\Tests\\":"tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Philip James Ajagabos",
+            "email": "ajagabos007@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ajagabos\\Kwik\\KwikServiceProvider"
+            ],
+            "aliases": {
+                "Kwik": "Ajagabos\\Kwik\\Facades\\Kwik"
+            }
+        }
+    },
+    "minimum-stability": "stable"
+}
