@@ -18,6 +18,19 @@ use Illuminate\Support\Facades\Config;
 class Kwik {
 
     /**
+     * Payment method
+     * @var integer
+     */
+    protected const PAYMENT_METHOD=32;
+
+
+    /**
+     * Origin booking
+     * @var integer
+     */
+    protected const ORIGIN_BOOKING=1;
+
+    /**
      * Kwik email
      * 
      * @var string
@@ -241,6 +254,10 @@ class Kwik {
             'is_vendor' => $this->isVendor == true? 1 : 0 ,
         ];
 
+        $body['access_token'] = $this->accessToken;
+        $body['domain_name'] = $this->domainName;
+
+
         if(!is_null($this->accessToken) && \strlen($this->accessToken) > 0)
         {
             $params['access_token'] = $this->accessToken;
@@ -250,7 +267,6 @@ class Kwik {
             "body" => json_encode($body),
             'query' => $params
         ];
-
         
         $this->response = $this->client->{strtolower($method)}(
             $this->baseUrl.$relativeUrl, $request_data
@@ -338,7 +354,7 @@ class Kwik {
     }
 
     /**
-     * Login a vendor using the given credentials or the env varials 
+     * Login a vendor using the given credentials or the env variables 
      * 
      * @param array<string, string> $credentials
      * 
@@ -368,10 +384,10 @@ class Kwik {
     }  
 
     /**
-     * Login a vendor using the given credentials or the env varials 
+     * Login a vendor using the given credentials or the env variables 
      * 
      * @param array<string, string> $data
-     * @return array<string, string> 
+     * @return array<string, mix> 
      * 
      */
     public function getVehicles(array $data=[])
@@ -386,17 +402,96 @@ class Kwik {
  
         $this->httpRequest('GET', '/getVehicle', $body);
 
+        return $this->responseData();
+    }  
+
+    /**
+     * Fetch loader amount 
+     * 
+     * The api is used to get loaders count mapped with their amount 
+     * 
+     * @param array<string, string> $data
+     * @return array{
+     *     loaderInfo: array<int, array{loaders_count: int, loaders_amount: string}>,
+     *     is_loaders_enabled: int,
+     *     each_loader_amount: int,
+     *     max_loader_count: int
+     * }
+     * 
+     */
+    public function getLoaders(array $data=[])
+    {
+       
+        $this->httpRequest('GET', '/getLoaderList', $data);
+
+        return $this->responseData();
+    }  
+
+
+    /**
+     * cancel  a pickup and delivery task 
+     * 
+     * @param array<string,string> $data
+     */
+    public function createTask(array $data=[])
+    {       
+        $data['payment_method'] = self::PAYMENT_METHOD;
+        $data['amount'] = "0.01";
+
+        $this->httpRequest('POST', '/v2/create_task_via_vendor', $data);
+        $response =  \json_decode ($this->response->getBody());
+
+        return $this->responseData();
+    }
+
+    /**
+     * Cancel task
+     * 
+     * @param array<string,string> $data
+     */
+    public function cancelTask(array $data=[])
+    {       
+        $this->httpRequest('POST', '/cancel_vendor_task', $data);
+
+        return $this->responseData();
+    }
+
+     /**
+     * Fetch added cards
+     * 
+     * @param array<string,string> $data
+     */
+    public function getMerchantCards(array $data=[])
+    {    
+        $data['payment_method'] = self::PAYMENT_METHOD;
+        $data['origin_booking'] = self::ORIGIN_BOOKING;
+        $this->httpRequest('POST', '/fetch_merchant_cards', $data);
+
+        return $this->responseData();
+    }
+
+
+    public function responseData()
+    {
+        $data = [];
+
         if($this->response->getReasonPhrase() ==='OK')
         {
             $response =  \json_decode ($this->response->getBody(), true);
 
             if(array_key_exists('status', $response) && $response['status']===200)
             {
-                $vehicles = $response['data'];
+                $data = $response['data'];
             }
+            else {
+                \Log::error($response);
+                throw new Exception( array_key_exists('message', $response) ? $response['message'] : "Error Processing Request", 1);
+            }
+           
         }
 
-        return $vehicles;
-    }  
+        return $data;
+    }
+    
 
 }
